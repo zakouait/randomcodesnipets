@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Display</title>
+    <script>
+        window.onload = function() {
+            document.getElementById('fileInput').addEventListener('change', readFile);
+        }
+
+        function readFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const lines = content.split('\n');
+                const table = document.createElement('table');
+                table.border = '1';
+
+                // Create checkboxes for column selection
+                const headerRow = document.createElement('tr');
+                const headers = lines[0].split('|');
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = header;
+                    checkbox.checked = true;
+                    th.appendChild(checkbox);
+                    th.appendChild(document.createTextNode(header));
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+
+                // Create table rows
+                lines.slice(1).forEach(line => {
+                    const row = document.createElement('tr');
+                    const cells = line.split('|');
+                    cells.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        row.appendChild(td);
+                    });
+                    table.appendChild(row);
+                });
+
+                document.getElementById('tableContainer').innerHTML = '';
+                document.getElementById('tableContainer').appendChild(table);
+            };
+            reader.readAsText(file);
+        }
+
+        function sendSelectedData() {
+            const checkboxes = document.querySelectorAll('th input:checked');
+            const selectedColumns = Array.from(checkboxes).map(cb => cb.value);
+            const rows = document.querySelectorAll('table tr');
+
+            rows.forEach((row, rowIndex) => {
+                if (rowIndex === 0) return; // Skip header row
+                const cells = row.querySelectorAll('td');
+                const selectedData = [];
+                cells.forEach((cell, cellIndex) => {
+                    if (selectedColumns.includes(headers[cellIndex])) {
+                        selectedData.push(cell.textContent);
+                    }
+                });
+                const line = selectedData.join(';');
+                console.log('Line:', line);
+                // Implement sending logic here
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Text File Display</h1>
+    <input type="file" id="fileInput" accept=".txt">
+    <div id="tableContainer"></div>
+    <button onclick="sendSelectedData()">Send Selected Data</button>
+</body>
+</html>
